@@ -1,5 +1,6 @@
 // src/pages/SalesPage.jsx
 import React, { useMemo, useState } from "react";
+import InvoiceCreateModal from "./InvoiceCreateModal";
 
 const STATUS_STYLES = {
   payee: "bg-green-100 text-green-700 border-green-300",
@@ -20,9 +21,7 @@ function Badge({ status }) {
       envoyee: "Envoyée",
     }[status] || "Brouillon";
   return (
-    <span
-      className={`inline-block text-xs px-2 py-1 rounded-full border ${cls}`}
-    >
+    <span className={`inline-block text-xs px-2 py-1 rounded-full border ${cls}`}>
       {label}
     </span>
   );
@@ -47,6 +46,9 @@ export default function SalesPage() {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState("factures"); // factures | devis | avoirs
   const [status, setStatus] = useState("all");
+
+  // État d’ouverture de la modale de création
+  const [openCreate, setOpenCreate] = useState(false);
 
   // Données mock (remplace par tes données API plus tard)
   const rows = useMemo(
@@ -88,7 +90,7 @@ export default function SalesPage() {
         ref: "FAC-2025-004",
         ht: 990000,
         tva: 178200,
-        ttc: 1_168_200,
+        ttc: 1168200,
         statut: "en_retard",
       },
       {
@@ -106,13 +108,11 @@ export default function SalesPage() {
   );
 
   const filtered = rows.filter((r) => {
-    const okTab = tab === "factures"; // (ex: tu peux splitter plus tard selon type)
+    const okTab = tab === "factures"; // tu pourras splitter plus tard selon type
     const okStatus = status === "all" ? true : r.statut === status;
     const q = query.trim().toLowerCase();
     const okQ =
-      !q ||
-      r.client.toLowerCase().includes(q) ||
-      r.ref.toLowerCase().includes(q);
+      !q || r.client.toLowerCase().includes(q) || r.ref.toLowerCase().includes(q);
     return okTab && okStatus && okQ;
   });
 
@@ -132,7 +132,10 @@ export default function SalesPage() {
           <button className="px-3 py-2 text-sm rounded-lg border hover:bg-[#BFFFDF] hover:text-[#2e615e]">
             Exporter PDF
           </button>
-          <button className="px-3 py-2 text-sm rounded-lg bg-[#2e615e] text-white">
+          <button
+            className="px-3 py-2 text-sm rounded-lg bg-[#2e615e] text-white"
+            onClick={() => setOpenCreate(true)}
+          >
             + Nouvelle facture
           </button>
         </div>
@@ -151,9 +154,7 @@ export default function SalesPage() {
               onClick={() => setTab(t.key)}
               className={[
                 "px-4 py-2 text-sm rounded-full",
-                tab === t.key
-                  ? "bg-[#BFFFDF] text-[#2e615e]"
-                  : "bg-gray-100 hover:bg-gray-200",
+                tab === t.key ? "bg-[#BFFFDF] text-[#2e615e]" : "bg-gray-100 hover:bg-gray-200",
               ].join(" ")}
             >
               {t.label}
@@ -175,11 +176,7 @@ export default function SalesPage() {
           value={`${totalTVA.toLocaleString()} FCFA`}
           icon="🧾"
         />
-        <SummaryCard
-          title="Montant HT"
-          value={`${totalHT.toLocaleString()} FCFA`}
-          icon="📊"
-        />
+        <SummaryCard title="Montant HT" value={`${totalHT.toLocaleString()} FCFA`} icon="📊" />
       </div>
 
       {/* Filtres */}
@@ -191,8 +188,8 @@ export default function SalesPage() {
             className="border rounded-lg px-3 py-2 text-sm"
             placeholder="Rechercher client ou réf…"
           />
-          <select className="border rounded-lg px-3 py-2 text-sm">
-            <option>Tout client</option>
+          <select className="border rounded-lg px-3 py-2 text-sm" defaultValue="">
+            <option value="">Tout client</option>
             <option>SENCOM SARL</option>
             <option>Wari Services</option>
             <option>NGO Santé+</option>
@@ -212,10 +209,7 @@ export default function SalesPage() {
             <option value="brouillon">Brouillon</option>
           </select>
           <div className="flex gap-2">
-            <input
-              type="date"
-              className="border rounded-lg px-3 py-2 text-sm w-full"
-            />
+            <input type="date" className="border rounded-lg px-3 py-2 text-sm w-full" />
           </div>
         </div>
       </div>
@@ -240,23 +234,13 @@ export default function SalesPage() {
             <tbody>
               {filtered.map((r, i) => (
                 <tr key={r.id} className={i % 2 ? "bg-[#fff7e6]" : ""}>
-                  <td className="px-3 py-2">
-                    {r.id.toString().padStart(3, "0")}
-                  </td>
-                  <td className="px-3 py-2">
-                    {new Date(r.date).toLocaleDateString()}
-                  </td>
+                  <td className="px-3 py-2">{r.id.toString().padStart(3, "0")}</td>
+                  <td className="px-3 py-2">{new Date(r.date).toLocaleDateString()}</td>
                   <td className="px-3 py-2">{r.client}</td>
                   <td className="px-3 py-2 font-medium">{r.ref}</td>
-                  <td className="px-3 py-2 text-right">
-                    {r.ht.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    {r.tva.toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    {r.ttc.toLocaleString()}
-                  </td>
+                  <td className="px-3 py-2 text-right">{r.ht.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right">{r.tva.toLocaleString()}</td>
+                  <td className="px-3 py-2 text-right">{r.ttc.toLocaleString()}</td>
                   <td className="px-3 py-2">
                     <Badge status={r.statut} />
                   </td>
@@ -288,15 +272,9 @@ export default function SalesPage() {
                 <td className="px-3 py-2" colSpan={4}>
                   Totaux
                 </td>
-                <td className="px-3 py-2 text-right">
-                  {totalHT.toLocaleString()}
-                </td>
-                <td className="px-3 py-2 text-right">
-                  {totalTVA.toLocaleString()}
-                </td>
-                <td className="px-3 py-2 text-right">
-                  {totalTTC.toLocaleString()}
-                </td>
+                <td className="px-3 py-2 text-right">{totalHT.toLocaleString()}</td>
+                <td className="px-3 py-2 text-right">{totalTVA.toLocaleString()}</td>
+                <td className="px-3 py-2 text-right">{totalTTC.toLocaleString()}</td>
                 <td colSpan={2}></td>
               </tr>
             </tfoot>
@@ -307,21 +285,28 @@ export default function SalesPage() {
         <div className="flex justify-between items-center mt-4 text-sm">
           <span className="text-gray-600">1–5 sur 5</span>
           <div className="flex gap-2">
-            <button
-              className="px-3 py-1 rounded border hover:bg-gray-100"
-              disabled
-            >
+            <button className="px-3 py-1 rounded border hover:bg-gray-100" disabled>
               Préc.
             </button>
-            <button
-              className="px-3 py-1 rounded border hover:bg-gray-100"
-              disabled
-            >
+            <button className="px-3 py-1 rounded border hover:bg-gray-100" disabled>
               Suiv.
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modale de création de facture */}
+      <InvoiceCreateModal
+        open={openCreate}
+        onClose={() => setOpenCreate(false)}
+        onCreate={(invoice) => {
+          console.log("FACTURE CRÉÉE:", invoice);
+          // TODO: envoyer au backend puis rafraîchir la liste (setRows(...))
+          setOpenCreate(false);
+        }}
+        defaultClient=""
+        nextRef={`FAC-${new Date().getFullYear()}-${String(1).padStart(3, "0")}`}
+      />
     </div>
   );
 }
