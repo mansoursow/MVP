@@ -12,6 +12,7 @@ import PurchasesPage from "../pages/PurchasesPage";
 import BankPage from "../pages/BankPage";
 import PermanentFolderPage from "../pages/PermanentFolderPage";
 import SettingsPage from "../pages/SettingsPage";
+import JournalEntriesPage from "../pages/JournalEntriesPage";
 
 function HomeContent() {
   return (
@@ -43,6 +44,7 @@ export default function Dashboard() {
           <Route path="/caisse" element={<CashPage />} />
           <Route path="/achats" element={<PurchasesPage />} />
           <Route path="/banque" element={<BankPage />} />
+          <Route path="/journal" element={<JournalEntriesPage />} />
           <Route path="/dossier-permanent" element={<PermanentFolderPage />} />
           <Route path="/parametres" element={<SettingsPage />} />
         </Routes>
